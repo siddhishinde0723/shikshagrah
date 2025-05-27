@@ -41,7 +41,7 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
   const contactRegex = /^[6-9]\d{9}$/;
   const udiseRegex = /^\d{11}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const usernameRegex = /^[a-zA-Z0-9_@.]+$/; //add
+  const usernameRegex = /^[a-zA-Z0-9-_]{3,30}$/; //add
   const lowerLabel = label?.toLowerCase();
 
   const isOptional = () => {
@@ -63,7 +63,7 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
         break;
       case 'username':
         if (!usernameRegex.test(val))
-          return 'Username can contain only letters and underscores.';
+          return 'Username can contain only letters, numbers, hyphens, and underscores, and must be 3 to 30 characters long.';
         break;
       case 'contact number':
         if (!contactRegex.test(val))
@@ -289,7 +289,11 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
               marginLeft: '12px',
             }}
           >
-            Enter either Email or Contact number
+            {isEmailField
+              ? 'Enter email'
+              : isMobileField
+              ? 'Enter contact number'
+              : 'Enter either Email or Contact number'}
           </Typography>
         )}
     </>
