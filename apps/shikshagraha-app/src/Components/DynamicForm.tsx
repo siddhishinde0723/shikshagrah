@@ -884,7 +884,7 @@ const DynamicForm = ({
     async ({ formData, errors }: { formData: any; errors: any }) => {
       const prevRole = prevFormData.current?.Role;
       const currentRole = formData?.Role;
-
+      console.log('currentRole', currentRole);
       // Create a new form data object
       let newFormData = { ...formData };
 
@@ -1198,7 +1198,7 @@ const DynamicForm = ({
                   ...prev['Sub-Role']?.['ui:options'],
                   enumOptions: newSubroles,
                 },
-                'ui:widget': newSubroles?.length
+                'ui:widget': newSubroles?.length //
                   ? 'CustomMultiSelectWidget'
                   : 'hidden',
               },
@@ -1292,8 +1292,8 @@ const DynamicForm = ({
           },
         },
       });
-      setErrorMessage(registrationResponse.message);
-      setAlertSeverity('success');
+      // setErrorMessage(registrationResponse.message);
+      // setAlertSeverity('success');
       setIsOpenOTP(true);
     } else {
       setShowError(true);
@@ -1322,11 +1322,12 @@ const DynamicForm = ({
         const foundOption = subRoleOptions.find(
           (option) => option.value === selectedId
         );
-        return foundOption?._originalData?.externalId ?? selectedId;
+        return foundOption?._originalData?._id ?? selectedId;
       });
     };
     // const userName = formData.firstName;
     const isMobile = /^[6-9]\d{9}$/.test(formData.mobile);
+    console.log(formData.Roles, 'roles');
     const payload = {
       name:
         formData.firstName + (formData.lastName ? ` ${formData.lastName}` : ''),
@@ -1341,7 +1342,7 @@ const DynamicForm = ({
       cluster: formData.Cluster?._id ?? '',
       school: formData.School?._id ?? '',
       registration_code: formData.District?.externalId ?? '',
-      professional_role: localStorage.getItem('role') ?? '',
+      professional_role: localStorage.getItem('role'),
       professional_subroles: getSubRoleExternalIds(),
       otp: Number(otp),
       // customFields,
@@ -1387,10 +1388,8 @@ const DynamicForm = ({
     } else {
       setShowError(true);
       setAlertSeverity('error');
-
-      setErrorMessage(
-        registrationResponse.data && registrationResponse.data.params.err
-      );
+      console.log('registrationResponse', registrationResponse);
+      setErrorMessage(registrationResponse.data.message);
     }
   };
 
@@ -1527,7 +1526,8 @@ const DynamicForm = ({
                 !formData?.confirm_password ||
                 !formData.Role ||
                 !formData?.udise ||
-                !isUsernameValid
+                !isUsernameValid ||
+                (formData.Role !== 'parents' && formData.Role !== 'others' && (!formData?.['Sub-Role'] || formData['Sub-Role'].length === 0))
                 // !formData?.school ||
                 // !formData?.state
               }

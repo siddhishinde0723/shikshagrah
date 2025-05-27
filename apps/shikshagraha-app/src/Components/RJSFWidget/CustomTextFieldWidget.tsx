@@ -41,7 +41,7 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
   const contactRegex = /^[6-9]\d{9}$/;
   const udiseRegex = /^\d{11}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const usernameRegex = /^[a-zA-Z0-9_@.]+$/; //add
+  const usernameRegex = /^[a-zA-Z0-9-_]{3,30}$/; //add
   const lowerLabel = label?.toLowerCase();
 
   const isOptional = () => {
@@ -63,7 +63,7 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
         break;
       case 'username':
         if (!usernameRegex.test(val))
-          return 'Username can contain only letters and underscores.';
+          return 'Username can contain only letters, numbers, hyphens, and underscores, and must be 3 to 30 characters long.';
         break;
       case 'contact number':
         if (!contactRegex.test(val))
@@ -77,7 +77,8 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
           return 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.';
         break;
       case 'confirm password':
-        if (val !== formData.password) return 'Passwords do not match.';
+        if (val !== formData.password)
+          return 'Password and confirm password must be the same.';
         break;
     }
     return null;
@@ -182,6 +183,18 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
 
   return (
     <>
+      {/* Hidden fields to prevent autofill */}
+      <input
+        type="text"
+        name="prevent_autofill_username"
+        style={{ display: 'none' }}
+      />
+      <input
+        type="password"
+        name="prevent_autofill_password"
+        style={{ display: 'none' }}
+      />
+
       <TextField
         fullWidth
         id={id}
@@ -208,9 +221,12 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
         }
         variant="outlined"
         size="small"
+        autoComplete={
+          isPasswordField || isConfirmPasswordField ? 'new-password' : 'off'
+        }
         FormHelperTextProps={{
           sx: {
-            color: 'red', // ✅ helperText color set manually
+            color: 'red',
             fontSize: '11px',
             marginLeft: '0px',
           },
@@ -219,6 +235,12 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
           readOnly: readonly,
           inputMode: isMobileField ? 'numeric' : 'text',
           pattern: isMobileField ? '[0-9]*' : undefined,
+          autoComplete:
+            isPasswordField || isConfirmPasswordField ? 'new-password' : 'off',
+          name:
+            isPasswordField || isConfirmPasswordField
+              ? 'login-password'
+              : 'login-username',
           sx: {
             '& .MuiInputBase-input': {
               padding: '10px 12px',
@@ -241,18 +263,17 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
         }}
         InputLabelProps={{
           sx: {
-            fontSize: '12px', // Label font size
+            fontSize: '12px',
             '&.Mui-focused': {
-              transform: 'translate(14px, -6px) scale(0.75)', // Shrink the label when focused
-              color: '#582E92', // Optional: change label color on focus
+              transform: 'translate(14px, -6px) scale(0.75)',
+              color: '#582E92',
             },
             '&.MuiInputLabel-shrink': {
-              transform: 'translate(14px, -6px) scale(0.75)', // Shrink when filled or focused
-              color: '#582E92', // Optional: change label color when filled
+              transform: 'translate(14px, -6px) scale(0.75)',
+              color: '#582E92',
             },
           },
         }}
-        //   margin="normal"
       />
       {(isEmailField || isMobileField) &&
         !value &&
@@ -268,7 +289,11 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
               marginLeft: '12px',
             }}
           >
-            Enter either Email or Contact number
+            {isEmailField
+              ? 'Enter email'
+              : isMobileField
+              ? 'Enter contact number'
+              : 'Enter either Email or Contact number'}
           </Typography>
         )}
     </>

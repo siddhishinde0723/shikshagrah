@@ -10,7 +10,6 @@ interface AuthParams {
   userId: string;
 }
 
-
 export const fetchProfileData = async (userId: string, token: string) => {
   try {
     const response = await fetch(API_ENDPOINTS.userProfileRead, {
@@ -22,12 +21,22 @@ export const fetchProfileData = async (userId: string, token: string) => {
     });
 
     if (!response.ok) {
+      if (response.status == 401) {
+        localStorage.removeItem('accToken');
+        localStorage.clear();
+      }
+      window.location.href = process.env.NEXT_PUBLIC_LOGINPAGE || '';
       throw new Error('Failed to fetch profile data');
     }
 
     const data = await response.json();
     return data.result?.response || data.result;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status == 401) {
+      localStorage.removeItem('accToken');
+      localStorage.clear();
+      window.location.href = process.env.NEXT_PUBLIC_LOGINPAGE || '';
+    }
     console.error('Error fetching profile data:', error);
     return null;
   }
@@ -69,7 +78,6 @@ export const fetchLocationDetails = async (locations: any[]) => {
     return [];
   }
 };
-
 
 export const updateProfile = async (
   userId: string | null,
@@ -255,7 +263,7 @@ export const resetUserPassword = async (
     });
 
     const data = await response.json();
-console.log(data)
+    console.log(data);
     if (!response.ok) {
       const message =
         data?.error?.[0]?.msg || data?.message || 'Failed to reset password';
@@ -271,5 +279,3 @@ console.log(data)
     };
   }
 };
-
-

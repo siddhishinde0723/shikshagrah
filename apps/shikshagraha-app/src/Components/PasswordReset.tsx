@@ -22,6 +22,7 @@ import {
   sendOtp,
   verifyOtpService,
   resetPassword,
+  sendForgetOtp,
 } from '../services/LoginService';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -103,7 +104,7 @@ const PasswordReset = ({ name }: { name: string }) => {
       };
 
       console.log(otpPayload);
-      const response = await sendOtp(otpPayload);
+      const response = await sendForgetOtp(otpPayload);
 
       console.log(response);
       if (response?.responseCode === 'OK') {
@@ -147,7 +148,7 @@ const PasswordReset = ({ name }: { name: string }) => {
         ...(isMobile && { phone_code: '+91' }),
       };
 
-      await sendOtp(otpPayload);
+      await sendForgetOtp(otpPayload);
       setSecondsLeft(600); // Reset expiration timer
     } catch (err) {
       setError('Failed to resend OTP');
@@ -177,13 +178,13 @@ const PasswordReset = ({ name }: { name: string }) => {
       console.log(payload, 'verify otp');
       const response = await verifyOtpService(payload);
 
-       if (response?.responseCode === 'OK') {
-         setShowSuccess(true);
+      if (response?.responseCode === 'OK') {
+        setShowSuccess(true);
         //  setTimeout(() => router.push('/'));
-       } else {
-         setError(response?.message || 'Invalid OTP');
-         setShowError(true);
-       }
+      } else {
+        setError(response?.message || 'Invalid OTP');
+        setShowError(true);
+      }
     } catch (err) {
       setError('Failed to verify OTP. Please try again.');
       setShowError(true);
@@ -194,7 +195,7 @@ const PasswordReset = ({ name }: { name: string }) => {
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Password and confirm password must be the same.');
       setShowError(true);
       return;
     }
@@ -233,7 +234,7 @@ const PasswordReset = ({ name }: { name: string }) => {
     if (step === 'otp') {
       setStep('reset');
     } else if (step === 'reset') {
-       router.push('/');
+      router.push('/');
     }
   };
   const validatePassword = (val: string, name: string) => {
@@ -245,7 +246,7 @@ const PasswordReset = ({ name }: { name: string }) => {
     } else if (name === 'confirmPassword') {
       setConfirmPassword(val);
       if (val !== newPassword) {
-        return 'Passwords do not match';
+        return 'Password and confirm password must be the same.';
       }
     } else {
       return null;
@@ -257,25 +258,52 @@ const PasswordReset = ({ name }: { name: string }) => {
 
     let errorMsg: string | null | undefined;
 
+    // Update the value in formData first (so we can validate against the latest state)
+    const updatedFormData = {
+      ...formData,
+      [name]: val,
+    };
+    setFormData(updatedFormData);
+
     if (name === 'password') {
       errorMsg = validatePassword(val, name);
-      setFormErrors((prev) => ({
-        ...prev,
-        [name]: errorMsg ?? '',
-      }));
     } else if (name === 'confirmPassword') {
       errorMsg = validatePassword(val, name);
-      setFormErrors((prev) => ({
-        ...prev,
-        [name]: errorMsg ?? '',
-      }));
     }
 
-    // Always assign string to form data
-    setFormData((prev) => ({
-      ...prev,
-      [name]: val,
-    }));
+    const updatedErrors = {
+      ...formErrors,
+      [name]: errorMsg ?? '',
+    };
+
+    // ✅ Validate confirmPassword when password changes
+    if (
+      name === 'password' &&
+      updatedFormData.confirmPassword &&
+      val !== updatedFormData.confirmPassword
+    ) {
+      updatedErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    // ✅ Validate confirmPassword when confirmPassword changes
+    if (
+      name === 'confirmPassword' &&
+      updatedFormData.password &&
+      val !== updatedFormData.password
+    ) {
+      updatedErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    // ✅ Clear error if they now match
+    if (
+      updatedFormData.password &&
+      updatedFormData.confirmPassword &&
+      updatedFormData.password === updatedFormData.confirmPassword
+    ) {
+      updatedErrors.confirmPassword = '';
+    }
+
+    setFormErrors(updatedErrors);
   };
 
   const handleChange = (index: number, value: string) => {
@@ -312,6 +340,14 @@ const PasswordReset = ({ name }: { name: string }) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
       prevInput?.focus();
+    }
+  };
+  const handlePaste = (e: any) => {
+    const pasteData = e.clipboardData.getData('text');
+    if (/^\d{6}$/.test(pasteData)) {
+      const digits = pasteData.split('');
+      setOtp(digits); // assuming `otp` is a state array of length 6
+      e.preventDefault();
     }
   };
   return (
@@ -401,6 +437,7 @@ const PasswordReset = ({ name }: { name: string }) => {
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, index)}
+                    onPaste={handlePaste}
                     inputProps={{
                       maxLength: 1,
                       sx: {
@@ -476,7 +513,7 @@ const PasswordReset = ({ name }: { name: string }) => {
           <>
             <Box sx={{ width: '100%' }}>
               <Typography variant="h5" gutterBottom>
-                Reset Password
+                Forgot Password
               </Typography>
             </Box>
             <TextField

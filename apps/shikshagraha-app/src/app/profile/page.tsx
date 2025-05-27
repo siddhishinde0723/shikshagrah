@@ -91,6 +91,7 @@ export default function Profile({ params }: { params: { id: string } }) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mappedProfile, setMappedProfile] = useState([]);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const [showPassword, setShowPassword] = useState({
     oldPassword: false,
@@ -109,6 +110,11 @@ export default function Profile({ params }: { params: { id: string } }) {
     confirmPassword: '',
   });
   const [severity, setSeverity] = useState('');
+  const [disableReset, setDisableReset] = useState(false);
+  const [expandedFields, setExpandedFields] = useState({
+    'Professional Role': false,
+    'Professional Subrole': false,
+  });
 
   useEffect(() => {
     const getProfileData = async () => {
@@ -390,7 +396,7 @@ export default function Profile({ params }: { params: { id: string } }) {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswords({ ...passwords, [name]: value });
-
+    setDisableReset(false);
     // Validate on change
     if (name === 'newPassword') {
       const passwordRegex =
@@ -407,7 +413,10 @@ export default function Profile({ params }: { params: { id: string } }) {
 
       // Also validate confirm password if it's not empty
       if (passwords.confirmPassword && value !== passwords.confirmPassword) {
-        setErrors({ ...errors, confirmPassword: 'Passwords do not match' });
+        setErrors({
+          ...errors,
+          confirmPassword: 'Password and confirm password must be the same.',
+        });
       } else if (
         passwords.confirmPassword &&
         value === passwords.confirmPassword
@@ -418,7 +427,10 @@ export default function Profile({ params }: { params: { id: string } }) {
 
     if (name === 'confirmPassword') {
       if (value !== passwords.newPassword) {
-        setErrors({ ...errors, confirmPassword: 'Passwords do not match' });
+        setErrors({
+          ...errors,
+          confirmPassword: 'Password and confirm password must be the same.',
+        });
       } else {
         setErrors({ ...errors, confirmPassword: '' });
       }
@@ -451,7 +463,8 @@ export default function Profile({ params }: { params: { id: string } }) {
       newErrors.confirmPassword = 'Please confirm your password';
       hasErrors = true;
     } else if (passwords.newPassword !== passwords.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword =
+        'Password and confirm password must be the same.';
       hasErrors = true;
     }
 
@@ -466,9 +479,9 @@ export default function Profile({ params }: { params: { id: string } }) {
   const handleCloseSnackbar = () => {
     setShowError(false);
     setErrorMessage('');
-    if (severity === 'success') {
-      router.push('/');
-    }
+    // if (severity === 'success') {
+    //   router.push('/');
+    // }
     // router.push('/');
   };
 
@@ -484,23 +497,24 @@ export default function Profile({ params }: { params: { id: string } }) {
       );
       if (!result.success) {
         console.error('Reset password failed:', result.errorMessage);
+        setDisableReset(true);
         setShowError(true);
         setErrorMessage(result.errorMessage);
         setSeverity('error');
       } else {
-        setShowError(true);
-        setErrorMessage('User Password Updated Successfully');
-        setSeverity('success');
+        setDisableReset(true);
+        setShowSuccessDialog(true); // Show success dialog
+        handleClose();
+        // router.push('/');
       }
 
       // handleClose();
-      localStorage.clear();
-      // router.push('/');
     } catch (error) {
       console.error('Reset password failed:', error);
       setShowError(true);
       setErrorMessage(error);
       setSeverity('error');
+      setIsAuthenticated(true);
     } finally {
       setLoading(false);
     }
@@ -568,8 +582,8 @@ export default function Profile({ params }: { params: { id: string } }) {
                 <Grid item>
                   <Avatar
                     sx={{
-                      width: 80,
-                      height: 80,
+                      width: 50,
+                      height: 50,
                       boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
                     }}
                     src={profileData?.avatar ?? ''}
@@ -589,14 +603,103 @@ export default function Profile({ params }: { params: { id: string } }) {
                   <Typography variant="subtitle1" textAlign="left" color="gray">
                     {userData?.role}
                   </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    textAlign="left"
-                    color="darkslategray"
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                  >
-                    @{userData?.username}
-                  </Typography>
+                  {userData?.username && (
+                    <Typography
+                      variant="subtitle2"
+                      component="div"
+                      textAlign="left"
+                      color="darkslategray"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        fontWeight: 'bold',
+                        fontSize: { xs: '12px', sm: '14px' },
+                        flexWrap: 'wrap',
+                        width: '100%',
+                      }}
+                    >
+                      <Box component="span" sx={{ color: '#582E92' }}>
+                        Username:
+                      </Box>
+                      <Box
+                        component="span"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: { xs: '150px', sm: 'none' },
+                        }}
+                      >
+                        {userData.username}
+                      </Box>
+                    </Typography>
+                  )}
+                  {userData?.email && (
+                    <Typography
+                      variant="subtitle2"
+                      component="div"
+                      textAlign="left"
+                      color="darkslategray"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        fontWeight: 'bold',
+                        fontSize: { xs: '12px', sm: '14px' },
+                        flexWrap: 'wrap',
+                        width: '100%',
+                      }}
+                    >
+                      <Box component="span" sx={{ color: '#582E92' }}>
+                        Email:
+                      </Box>
+                      <Box
+                        component="span"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: { xs: '150px', sm: 'none' },
+                        }}
+                      >
+                        {userData.email}
+                      </Box>
+                    </Typography>
+                  )}
+                  {userData?.phone && (
+                    <Typography
+                      variant="subtitle2"
+                      component="div"
+                      textAlign="left"
+                      color="darkslategray"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        fontWeight: 'bold',
+                        fontSize: { xs: '12px', sm: '14px' },
+                        flexWrap: 'wrap',
+                        width: '100%',
+                      }}
+                    >
+                      <Box component="span" sx={{ color: '#582E92' }}>
+                        Phone:
+                      </Box>
+                      <Box
+                        component="span"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: { xs: '150px', sm: 'none' },
+                        }}
+                      >
+                        {userData.phone}
+                      </Box>
+                    </Typography>
+                  )}
+
                   <Typography
                     component="span"
                     sx={{
@@ -632,56 +735,92 @@ export default function Profile({ params }: { params: { id: string } }) {
                 direction="row"
               >
                 <Grid item xs={12}>
-                  {mappedProfile.map((item) => (
-                    <Box
-                      key={item.label}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: {
-                          xs: 'column',
-                          sm: 'row',
-                        },
-                        justifyContent: 'space-between',
-                        alignItems: {
-                          xs: 'flex-start',
-                          sm: 'center',
-                        },
-                        paddingBottom: '16px',
-                        width: '100%',
-                      }}
-                    >
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 'bold',
-                          color: '#FF9911',
-                          minWidth: {
-                            xs: '100%',
-                            sm: '30%',
-                          },
-                          marginBottom: {
-                            xs: '4px',
-                            sm: 0,
-                          },
-                        }}
-                      >
-                        {item.label}:
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 'bold',
-                          color: '#333',
-                          width: {
-                            xs: '100%',
-                            sm: '65%',
-                          },
-                        }}
-                      >
-                        {item.value || 'N/A'}
-                      </Typography>
-                    </Box>
-                  ))}
+                  {mappedProfile
+                    .filter((item) => item.value)
+                    .map((item) => {
+                      const isExpandable =
+                        (item.label === 'Professional Role' ||
+                          item.label === 'Professional Subrole') &&
+                        item.value.split(',').length > 4;
+
+                      const isExpanded = expandedFields[item.label];
+                      const displayedValue =
+                        isExpandable && !isExpanded
+                          ? item.value.split(',').slice(0, 1).join(',') + '...'
+                          : item.value;
+
+                      return (
+                        <Box
+                          key={item.label}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: {
+                              xs: 'column',
+                              sm: 'row',
+                            },
+                            justifyContent: 'space-between',
+                            alignItems: {
+                              xs: 'flex-start',
+                              sm: 'center',
+                            },
+                            paddingBottom: '16px',
+                            width: '100%',
+                          }}
+                        >
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontWeight: 'bold',
+                              color: '#FF9911',
+                              minWidth: {
+                                xs: '100%',
+                                sm: '30%',
+                              },
+                              marginBottom: {
+                                xs: '4px',
+                                sm: 0,
+                              },
+                            }}
+                          >
+                            {item.label}:
+                          </Typography>
+
+                          <Box
+                            sx={{
+                              width: {
+                                xs: '100%',
+                                sm: '65%',
+                              },
+                            }}
+                          >
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                fontWeight: 'bold',
+                                color: '#333',
+                              }}
+                            >
+                              {displayedValue}
+                            </Typography>
+
+                            {isExpandable && (
+                              <Button
+                                size="small"
+                                onClick={() =>
+                                  setExpandedFields((prev) => ({
+                                    ...prev,
+                                    [item.label]: !prev[item.label],
+                                  }))
+                                }
+                                sx={{ textTransform: 'none', mt: 0.5 }}
+                              >
+                                {isExpanded ? 'Show Less' : 'Show More'}
+                              </Button>
+                            )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
                 </Grid>
               </Grid>
             </Box>
@@ -778,7 +917,7 @@ export default function Profile({ params }: { params: { id: string } }) {
               )}
             </Box>
 
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
+            {/* <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Button
                 onClick={handleDeleteAccountClick}
                 variant="contained"
@@ -790,7 +929,7 @@ export default function Profile({ params }: { params: { id: string } }) {
               >
                 Delete Account
               </Button>
-            </Box>
+            </Box> */}
           </Box>
         </Box>
         <OTPDialog
@@ -931,7 +1070,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                           onClick={() => setShowOldPassword(!showOldPassword)}
                           edge="end"
                         >
-                          {showOldPassword ? <VisibilityOff /> : <Visibility />}
+                          {showOldPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -956,7 +1095,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           edge="end"
                         >
-                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                          {showNewPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -984,9 +1123,9 @@ export default function Profile({ params }: { params: { id: string } }) {
                           edge="end"
                         >
                           {showConfirmPassword ? (
-                            <VisibilityOff />
-                          ) : (
                             <Visibility />
+                          ) : (
+                            <VisibilityOff />
                           )}
                         </IconButton>
                       </InputAdornment>
@@ -1014,6 +1153,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                 </Button>
                 <Button
                   onClick={handleSubmit}
+                  disabled={disableReset}
                   variant="contained"
                   sx={{
                     bgcolor: '#582E92',
@@ -1035,6 +1175,26 @@ export default function Profile({ params }: { params: { id: string } }) {
             </Grid>
           </Box>
         </Dialog>
+
+        <Dialog open={showSuccessDialog} onClose={() => {}}>
+          <DialogTitle>Password Reset</DialogTitle>
+          <DialogContent>
+            Your password has been reset successfully.
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="#6750A4"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                localStorage.clear();
+                router.push('/');
+              }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Snackbar
           open={showError}
           autoHideDuration={severity === 'success' ? 1000 : 6000}
