@@ -32,6 +32,7 @@ export const fetchProfileData = async (userId: string, token: string) => {
     const data = await response.json();
     return data.result?.response || data.result;
   } catch (error: any) {
+
     if (error.status == 401) {
       localStorage.removeItem('accToken');
       localStorage.clear();
