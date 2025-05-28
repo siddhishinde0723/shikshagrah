@@ -83,6 +83,12 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
     }
     return null;
   };
+  useEffect(() => {
+    if (isConfirmPasswordField && value) {
+      const error = validateField(label ?? '', value);
+      setLocalError(error);
+    }
+  }, [formData.password]);
   const shouldShowHelperText = () => {
     // Always show for non-email/mobile fields
     if (!isEmailField && !isMobileField) return true;
