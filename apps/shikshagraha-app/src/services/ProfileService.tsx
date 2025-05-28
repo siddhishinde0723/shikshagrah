@@ -26,7 +26,7 @@ export const fetchProfileData = async (userId: string, token: string) => {
         localStorage.removeItem('accToken');
         localStorage.clear();
       }
-      window.location.href = process.env.NEXT_PUBLIC_LOGINPAGE || '';
+      window.location.href = process.env.NEXT_PUBLIC_LOGINPAGE + "?unAuth=true" || '';
       throw new Error('Failed to fetch profile data');
     }
 
@@ -36,7 +36,7 @@ export const fetchProfileData = async (userId: string, token: string) => {
     if (error.status == 401) {
       localStorage.removeItem('accToken');
       localStorage.clear();
-      window.location.href = process.env.NEXT_PUBLIC_LOGINPAGE || '';
+      window.location.href = process.env.NEXT_PUBLIC_LOGINPAGE + "?unAuth=true" || '';
     }
     console.error('Error fetching profile data:', error);
     return null;
