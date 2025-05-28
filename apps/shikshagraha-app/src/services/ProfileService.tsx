@@ -10,7 +10,6 @@ interface AuthParams {
   userId: string;
 }
 
-
 export const fetchProfileData = async (userId: string, token: string) => {
   try {
     const response = await fetch(API_ENDPOINTS.userProfileRead, {
@@ -79,7 +78,6 @@ export const fetchLocationDetails = async (locations: any[]) => {
     return [];
   }
 };
-
 
 export const updateProfile = async (
   userId: string | null,
@@ -265,7 +263,7 @@ export const resetUserPassword = async (
     });
 
     const data = await response.json();
-console.log(data)
+    console.log(data);
     if (!response.ok) {
       const message =
         data?.error?.[0]?.msg || data?.message || 'Failed to reset password';
@@ -281,5 +279,3 @@ console.log(data)
     };
   }
 };
-
-

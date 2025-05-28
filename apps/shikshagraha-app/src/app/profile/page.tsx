@@ -91,6 +91,7 @@ export default function Profile({ params }: { params: { id: string } }) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mappedProfile, setMappedProfile] = useState([]);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const [showPassword, setShowPassword] = useState({
     oldPassword: false,
@@ -110,6 +111,11 @@ export default function Profile({ params }: { params: { id: string } }) {
   });
   const [severity, setSeverity] = useState('');
   const [disableReset, setDisableReset] = useState(false);
+  const [expandedFields, setExpandedFields] = useState({
+    'Professional Role': false,
+    'Professional Subrole': false,
+  });
+
   useEffect(() => {
     const getProfileData = async () => {
       setLoading(true);
@@ -498,9 +504,9 @@ export default function Profile({ params }: { params: { id: string } }) {
   const handleCloseSnackbar = () => {
     setShowError(false);
     setErrorMessage('');
-    if (severity === 'success') {
-      router.push('/');
-    }
+    // if (severity === 'success') {
+    //   router.push('/');
+    // }
     // router.push('/');
   };
 
@@ -522,11 +528,9 @@ export default function Profile({ params }: { params: { id: string } }) {
         setSeverity('error');
       } else {
         setDisableReset(true);
-        setShowError(true);
-        setErrorMessage('User Password Updated Successfully');
-        setSeverity('success');
-        localStorage.clear();
-        router.push('/');
+        setShowSuccessDialog(true); // Show success dialog
+        handleClose();
+        // router.push('/');
       }
 
       // handleClose();
@@ -535,6 +539,7 @@ export default function Profile({ params }: { params: { id: string } }) {
       setShowError(true);
       setErrorMessage(error);
       setSeverity('error');
+      setIsAuthenticated(true);
     } finally {
       setLoading(false);
     }
@@ -756,57 +761,102 @@ export default function Profile({ params }: { params: { id: string } }) {
               >
                 <Grid item xs={12}>
                   {mappedProfile
-                    .filter((item) => item.value) // Only include items with truthy values
-                    .map((item) => (
-                      <Box
-                        key={item.label}
-                        sx={{
-                          display: 'flex',
-                          flexDirection: {
-                            xs: 'column',
-                            sm: 'row',
-                          },
-                          justifyContent: 'space-between',
-                          alignItems: {
-                            xs: 'flex-start',
-                            sm: 'center',
-                          },
-                          paddingBottom: '16px',
-                          width: '100%',
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
+                    .filter((item) => item.value)
+                    .map((item) => {
+                      const isExpandable =
+                        (item.label === 'Professional Role' ||
+                          item.label === 'Professional Subrole') &&
+                        item.value.split(',').length > 4;
+
+                      const isExpanded = expandedFields[item.label];
+                      const displayedValue =
+                        isExpandable && !isExpanded
+                          ? item.value.split(',').slice(0, 1).join(',') + '...'
+                          : item.value;
+
+                      return (
+                        <Box
+                          key={item.label}
                           sx={{
-                            fontWeight: 'bold',
-                            color: '#FF9911',
-                            minWidth: {
-                              xs: '100%',
-                              sm: '30%',
+                            display: 'flex',
+                            flexDirection: {
+                              xs: 'column',
+                              sm: 'row',
                             },
-                            marginBottom: {
-                              xs: '4px',
-                              sm: 0,
+                            justifyContent: 'space-between',
+                            alignItems: {
+                              xs: 'flex-start',
+                              sm: 'flex-start', // Changed from 'center' to 'flex-start'
                             },
+                            paddingBottom: '16px',
+                            width: '100%',
                           }}
                         >
-                          {item.label}:
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            fontWeight: 'bold',
-                            color: '#333',
-                            width: {
-                              xs: '100%',
-                              sm: '65%',
-                            },
-                          }}
-                        >
-                          {item.value}
-                        </Typography>
-                      </Box>
-                    ))}
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontWeight: 'bold',
+                              color: '#FF9911',
+                              minWidth: {
+                                xs: '100%',
+                                sm: '30%',
+                              },
+                              marginBottom: {
+                                xs: '4px',
+                                sm: 0,
+                              },
+                              whiteSpace: 'nowrap', // Prevent label from wrapping
+                            }}
+                          >
+                            {item.label}:
+                          </Typography>
+
+                          <Box
+                            sx={{
+                              width: {
+                                xs: '100%',
+                                sm: '65%',
+                              },
+                              display: 'flex',
+                              flexDirection: 'row', // Ensure value and button stay in line
+                              alignItems: 'center', // Align value and button vertically
+                              flexWrap: 'wrap', // Allow wrapping if needed
+                              gap: '8px', // Add some gap between value and button
+                            }}
+                          >
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                fontWeight: 'bold',
+                                color: '#333',
+                                display: 'inline', // Make it inline
+                              }}
+                            >
+                              {displayedValue}
+                            </Typography>
+
+                            {isExpandable && (
+                              <Button
+                                size="small"
+                                onClick={() =>
+                                  setExpandedFields((prev) => ({
+                                    ...prev,
+                                    [item.label]: !prev[item.label],
+                                  }))
+                                }
+                                sx={{
+                                  textTransform: 'none',
+                                  mt: 0.5,
+                                  display: 'inline-flex', // Make button inline
+                                }}
+                              >
+                                {isExpanded ? 'Show Less' : 'Show More'}
+                              </Button>
+                            )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
                 </Grid>
               </Grid>
             </Box>
@@ -1056,7 +1106,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                           onClick={() => setShowOldPassword(!showOldPassword)}
                           edge="end"
                         >
-                          {showOldPassword ? <VisibilityOff /> : <Visibility />}
+                          {showOldPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -1081,7 +1131,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           edge="end"
                         >
-                          {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                          {showNewPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -1109,9 +1159,9 @@ export default function Profile({ params }: { params: { id: string } }) {
                           edge="end"
                         >
                           {showConfirmPassword ? (
-                            <VisibilityOff />
-                          ) : (
                             <Visibility />
+                          ) : (
+                            <VisibilityOff />
                           )}
                         </IconButton>
                       </InputAdornment>
@@ -1161,6 +1211,26 @@ export default function Profile({ params }: { params: { id: string } }) {
             </Grid>
           </Box>
         </Dialog>
+
+        <Dialog open={showSuccessDialog} onClose={() => {}}>
+          <DialogTitle>Password Reset</DialogTitle>
+          <DialogContent>
+            Your password has been reset successfully.
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="#6750A4"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                localStorage.clear();
+                router.push('/');
+              }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Snackbar
           open={showError}
           autoHideDuration={severity === 'success' ? 1000 : 6000}
