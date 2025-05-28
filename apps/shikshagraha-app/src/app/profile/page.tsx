@@ -761,7 +761,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                             justifyContent: 'space-between',
                             alignItems: {
                               xs: 'flex-start',
-                              sm: 'center',
+                              sm: 'flex-start', // Changed from 'center' to 'flex-start'
                             },
                             paddingBottom: '16px',
                             width: '100%',
@@ -780,6 +780,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                                 xs: '4px',
                                 sm: 0,
                               },
+                              whiteSpace: 'nowrap', // Prevent label from wrapping
                             }}
                           >
                             {item.label}:
@@ -791,6 +792,11 @@ export default function Profile({ params }: { params: { id: string } }) {
                                 xs: '100%',
                                 sm: '65%',
                               },
+                              display: 'flex',
+                              flexDirection: 'row', // Ensure value and button stay in line
+                              alignItems: 'center', // Align value and button vertically
+                              flexWrap: 'wrap', // Allow wrapping if needed
+                              gap: '8px', // Add some gap between value and button
                             }}
                           >
                             <Typography
@@ -798,6 +804,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                               sx={{
                                 fontWeight: 'bold',
                                 color: '#333',
+                                display: 'inline', // Make it inline
                               }}
                             >
                               {displayedValue}
@@ -812,7 +819,11 @@ export default function Profile({ params }: { params: { id: string } }) {
                                     [item.label]: !prev[item.label],
                                   }))
                                 }
-                                sx={{ textTransform: 'none', mt: 0.5 }}
+                                sx={{
+                                  textTransform: 'none',
+                                  mt: 0.5,
+                                  display: 'inline-flex', // Make button inline
+                                }}
                               >
                                 {isExpanded ? 'Show Less' : 'Show More'}
                               </Button>
