@@ -248,7 +248,7 @@ export default function Login() {
           </Box>
           <TextField
             fullWidth
-            label="Username"
+            label="Email / Mobile / Username"
             value={formData.userName}
             onChange={handleChange('userName')}
             error={error.userName}
@@ -371,9 +371,8 @@ export default function Login() {
                   : errorMessage}
               </Alert>
             )}
-            {
-              unAuth && (
-                <Snackbar
+            {unAuth && (
+              <Snackbar
                 open={true}
                 autoHideDuration={4000}
                 onClose={() => setShowError(false)}
@@ -384,11 +383,10 @@ export default function Login() {
                   onClose={() => remoteUnAuthToaster(false)}
                   sx={{ mt: 2 }}
                 >
-                Your session has expired, Please login again.
+                  Your session has expired, Please login again.
                 </Alert>
               </Snackbar>
-              )
-            }
+            )}
           </Grid>
         </form>
       </Grid>

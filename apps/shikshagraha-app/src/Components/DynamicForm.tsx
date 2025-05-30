@@ -1520,7 +1520,6 @@ const DynamicForm = ({
               // onClick={handleRegister}
               disabled={
                 !formData?.firstName ||
-                !formData?.lastName ||
                 !formData?.password ||
                 (!formData?.email && !formData?.mobile) ||
                 !formData?.confirm_password ||

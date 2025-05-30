@@ -216,31 +216,29 @@ export const renderCertificate = async (
   }
 };
 
-export const deactivateUser = async (
-  userId: string,
+export const deleteUserAccount = async (
   token: string,
-  tenantId: string
+  password: string
 ): Promise<any> => {
-  const url = `${process.env.NEXT_PUBLIC_SSUNBIRD_BASE_URL}/user/update/${userId}`;
+  const url = API_ENDPOINTS.deleteAccount;
 
   const headers = {
-    Authorization: `Bearer ${token}`,
-    // tenantId: 'ebae40d1-b78a-4f73-8756-df5e4b060436',
+    'X-auth-token': token,
     'Content-Type': 'application/json',
   };
 
   const data = {
-    userData: {
-      status: 'archived',
-      reason: 'Health Issue',
-    },
+    password: password,
   };
 
   try {
-    const response = await axios.patch(url, data, { headers });
+    const response = await axios.delete(url, {
+      headers,
+      data,
+    });
     return response.data;
   } catch (error) {
-    console.error('Error deactivating user:', error);
+    console.error('Error deleting user account:', error);
     throw error;
   }
 };
