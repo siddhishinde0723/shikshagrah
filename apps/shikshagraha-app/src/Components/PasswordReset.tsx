@@ -111,7 +111,7 @@ const PasswordReset = ({ name }: { name: string }) => {
         setStep('otp');
         setSecondsLeft(605);
       } else {
-        setError(response?.params?.errmsg || 'Failed to send OTP');
+        setError(response?.message || 'Failed to send OTP');
         setShowError(true);
       }
     } catch (err) {
@@ -282,7 +282,8 @@ const PasswordReset = ({ name }: { name: string }) => {
       updatedFormData.confirmPassword &&
       val !== updatedFormData.confirmPassword
     ) {
-      updatedErrors.confirmPassword = 'Passwords do not match';
+      updatedErrors.confirmPassword =
+        'Password and confirm password must be the same.';
     }
 
     // ✅ Validate confirmPassword when confirmPassword changes
@@ -291,7 +292,8 @@ const PasswordReset = ({ name }: { name: string }) => {
       updatedFormData.password &&
       val !== updatedFormData.password
     ) {
-      updatedErrors.confirmPassword = 'Passwords do not match';
+      updatedErrors.confirmPassword =
+        'Password and confirm password must be the same.';
     }
 
     // ✅ Clear error if they now match
