@@ -40,8 +40,8 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
   const nameRegex = /^[a-zA-Z]+$/;
   const contactRegex = /^[6-9]\d{9}$/;
   const udiseRegex = /^\d{11}$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const usernameRegex = /^[a-zA-Z0-9-_]{3,30}$/; //add
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const usernameRegex = /^[a-zA-Z0-9@._-]{3,30}$/; //add
   const lowerLabel = label?.toLowerCase();
 
   const isOptional = () => {
@@ -58,7 +58,6 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
     if (isOptional() && !val) return null;
     switch (field.toLowerCase()) {
       case 'first name':
-      case 'last name':
         if (!nameRegex.test(val)) return 'Only letters are allowed.';
         break;
       case 'username':
@@ -149,7 +148,6 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
     if (
       [
         'first name',
-        'last name',
         'username',
         'password',
         'confirm password',

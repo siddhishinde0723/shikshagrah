@@ -111,7 +111,7 @@ const PasswordReset = ({ name }: { name: string }) => {
         setStep('otp');
         setSecondsLeft(605);
       } else {
-        setError(response?.params?.errmsg || 'Failed to send OTP');
+        setError(response?.message || 'Failed to send OTP');
         setShowError(true);
       }
     } catch (err) {
