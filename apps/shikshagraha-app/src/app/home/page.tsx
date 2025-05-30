@@ -96,7 +96,9 @@ export default function Home() {
       }
       return `${base}${path}`;
     }
-    return path;
+    else {
+      return path + localStorage.getItem('accToken');
+    }
   };
 
   return (
