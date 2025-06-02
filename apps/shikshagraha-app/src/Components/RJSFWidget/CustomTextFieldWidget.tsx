@@ -56,6 +56,7 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
   };
   const validateField = (field: string, val: string): string | null => {
     if (isOptional() && !val) return null;
+    console.log('field', field);
     switch (field.toLowerCase()) {
       case 'first name':
         if (!nameRegex.test(val)) return 'Only letters are allowed.';
@@ -65,11 +66,16 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
           return 'Username can contain only letters, numbers, hyphens, and underscores, and must be 3 to 30 characters long.';
         break;
       case 'contact number':
-        if (!contactRegex.test(val))
-          return 'Enter a valid 10-digit mobile number.';
+        if (val && !contactRegex.test(val))
+          return 'Enter a valid 10-digit mobile number';
+        if (!val && !formData.email)
+          return 'Either contact number or email is required';
+        break;
         break;
       case 'email':
-        if (!emailRegex.test(val)) return 'Enter a valid email address.';
+        if (val && !emailRegex.test(val)) return 'Enter a valid email address';
+        if (!val && !formData.mobile)
+          return 'Either email or contact number is required';
         break;
       case 'password':
         if (!passwordRegex.test(val))
@@ -93,10 +99,10 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
     if (!isEmailField && !isMobileField) return true;
 
     // For email field - only show if mobile isn't entered
-    if (isEmailField) return !formData.mobile;
+    if (isEmailField) return !formData.mobile || (value && localError);
 
     // For mobile field - only show if email isn't entered
-    if (isMobileField) return !formData.email;
+    if (isMobileField) return !formData.email || (value && localError);
 
     return true;
   };
@@ -125,9 +131,9 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
     //   }
     // }
     onChange(val === '' ? undefined : val);
-    // if (onErrorChange) {
-    //   onErrorChange(!!error);
-    // }
+    if (props.onErrorChange) {
+      props.onErrorChange(!!error);
+    }
   };
 
   const handleBlur = () => {
@@ -146,12 +152,9 @@ const CustomTextFieldWidget = (props: WidgetProps) => {
   };
   const renderLabel = () => {
     if (
-      [
-        'first name',
-        'username',
-        'password',
-        'confirm password',
-      ].includes(lowerLabel ?? '')
+      ['first name', 'username', 'password', 'confirm password'].includes(
+        lowerLabel ?? ''
+      )
     ) {
       return (
         <>
