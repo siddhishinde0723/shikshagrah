@@ -1555,7 +1555,6 @@ const DynamicForm = ({
                 hasValidationErrors() ||
                 (formData.Role !== 'parents' &&
                   formData.Role !== 'others' &&
-                  formData.Role !== 'youth' &&
                   (!formData?.['Sub-Role'] ||
                     formData['Sub-Role'].length === 0))
                 // !formData?.school ||
