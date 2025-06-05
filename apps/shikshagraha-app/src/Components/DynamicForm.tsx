@@ -1220,6 +1220,15 @@ const DynamicForm = ({
           onErrorChange={(hasError) => {
             handleFieldError(props.id, hasError);
           }}
+          onClearError={(fieldName) => {
+            // Clear error for the other field when one is filled
+            setFieldErrors((prev) => ({ ...prev, [fieldName]: false }));
+            setFormErrors((prev) => {
+              const newErrors = { ...prev };
+              delete newErrors[fieldName];
+              return newErrors;
+            });
+          }}
         />
       ),
       CustomCheckboxWidget,
@@ -1490,11 +1499,19 @@ const DynamicForm = ({
     // localStorage.clear();
   };
   const hasValidationErrors = () => {
+    const hasFieldErrors = Object.values(fieldErrors).some(Boolean);
+    const hasFormErrors = Object.keys(formErrors).length > 0;
+
+    // Check if we have at least one valid contact method
+    const hasValidContact =
+      (formData.email && isValidEmail(formData.email)) ||
+      (formData.mobile && isValidMobile(formData.mobile));
+
     return (
-      Object.keys(formErrors).length > 0 ||
-      Object.values(fieldErrors).some(Boolean) ||
-      (!formData.email && !formData.mobile) ||
-      !isUsernameValid
+      hasFieldErrors ||
+      hasFormErrors ||
+      !hasValidContact ||
+      (!isUsernameValid && formData.Username)
     );
   };
   console.log('form', formData, validator);
@@ -1555,6 +1572,7 @@ const DynamicForm = ({
                 hasValidationErrors() ||
                 (formData.Role !== 'parents' &&
                   formData.Role !== 'others' &&
+                  formData.Role !== 'youth' &&
                   (!formData?.['Sub-Role'] ||
                     formData['Sub-Role'].length === 0))
                 // !formData?.school ||
