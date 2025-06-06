@@ -1565,6 +1565,7 @@ const DynamicForm = ({
                 !formData?.password ||
                 (!formData?.email && !formData?.mobile) ||
                 !formData?.confirm_password ||
+                formData.password !== formData.confirm_password ||
                 !formData.Role ||
                 !formData?.udise ||
                 !formData?.Udise ||
