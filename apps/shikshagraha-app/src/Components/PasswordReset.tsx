@@ -72,36 +72,58 @@ const PasswordReset = ({ name }: { name: string }) => {
 const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const { name, value } = e.target;
 
+  // When typing into identifier field
   if (name === 'identifier') {
-    const isPotentialMobile = /^[6-9]/.test(value);
+    let newValue = value;
 
-    // Mobile number validation
+    // If input starts with 6-9, treat as mobile
+    const isPotentialMobile = /^[6-9]/.test(newValue);
+
     if (isPotentialMobile) {
-      // Prevent typing beyond 10 digits
-      if (value.length > 10) {
-        return;
+      // Remove non-digit characters
+      newValue = newValue.replace(/\D/g, '');
+
+      // Limit to 10 digits
+      if (newValue.length > 10) {
+        newValue = newValue.slice(0, 10);
       }
 
-      // Set validation error if not exactly 10 digits (but only after user stops typing)
       setFormErrors((prev) => ({
         ...prev,
-        [name]: value.length === 10 ? '' : 'Mobile number must be 10 digits',
+        [name]: newValue.length === 10 ? '' : 'Mobile number must be 10 digits',
       }));
-    }
-    // Email validation (optional)
-    else if (value.includes('@')) {
+    } else if (newValue.includes('@')) {
+      // Email validation
       setFormErrors((prev) => ({
         ...prev,
-        [name]: emailRegex.test(value) ? '' : 'Please enter a valid email',
+        [name]: emailRegex.test(newValue)
+          ? ''
+          : 'Please enter a valid email address',
+      }));
+    } else {
+      // Reset identifier error if not matching either mobile or email
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: '',
       }));
     }
+
+    // Update identifier state
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+    return;
   }
 
+  // For other fields
   setFormData((prev) => ({
     ...prev,
     [name]: value,
   }));
 };
+
+
 
   const handleSendOtp = async () => {
     if (!formData?.identifier || !formData?.password) {
@@ -552,9 +574,13 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 },
               }}
               InputProps={{
-                inputMode: /^[6-9]/.test(formData.identifier)
-                  ? 'numeric'
-                  : 'text',
+                inputProps: /^[6-9]/.test(formData.identifier)
+                  ? {
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*',
+                      maxLength: 10,
+                    }
+                  : undefined,
                 sx: {
                   '& .MuiInputBase-input': {
                     padding: '14px',
