@@ -374,8 +374,8 @@ export default function Login() {
             {unAuth && (
               <Snackbar
                 open={true}
-                autoHideDuration={4000}
-                onClose={() => setShowError(false)}
+                autoHideDuration={3000}
+                onClose={() => remoteUnAuthToaster(false)}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
               >
                 <Alert
