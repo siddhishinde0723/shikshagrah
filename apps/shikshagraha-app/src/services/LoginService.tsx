@@ -180,7 +180,7 @@ export const fetchRoleData = async (): Promise<any> => {
 };
 export const getSubroles = async (parentEntityId: string) => {
   const response = await fetch(
-    `https://saas-qa.tekdinext.com/entity-management/v1/entities/subEntityList/${parentEntityId}?type=professional_subroles`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/entity-management/v1/entities/subEntityList/${parentEntityId}?type=professional_subroles`,
     {
       headers: {
         tenantId: 'shikshagraha',
