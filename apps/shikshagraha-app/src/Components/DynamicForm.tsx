@@ -1304,10 +1304,11 @@ const DynamicForm = ({
       ...(hasMobile && { phone: formData.mobile.trim() }),
       ...(hasMobile && { phone_code: '+91' }),
       password: formData.password,
-      registration_code: 'blr',
-      // registration_code: formData.Distric._id, // Using default value as per your curl example
+      // registration_code: 'blr',
+      registration_code: formData.District.externalId, // Using default value as per your curl example
     };
 
+    console.log('1331 payload', otpPayload);
     const registrationResponse = await sendOtp(otpPayload);
     if (registrationResponse?.responseCode === 'OK') {
       setRequestData({
