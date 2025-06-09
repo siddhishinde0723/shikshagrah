@@ -68,23 +68,62 @@ const PasswordReset = ({ name }: { name: string }) => {
     ? Math.max(0, 30 - Math.floor((Date.now() - lastResendTime) / 1000))
     : 0;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    console.log(name, value);
+
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+
+  // When typing into identifier field
+  if (name === 'identifier') {
+    let newValue = value;
+
+    // If input starts with 6-9, treat as mobile
+    const isPotentialMobile = /^[6-9]/.test(newValue);
+
+    if (isPotentialMobile) {
+      // Remove non-digit characters
+      newValue = newValue.replace(/\D/g, '');
+
+      // Limit to 10 digits
+      if (newValue.length > 10) {
+        newValue = newValue.slice(0, 10);
+      }
+
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: newValue.length === 10 ? '' : 'Mobile number must be 10 digits',
+      }));
+    } else if (newValue.includes('@')) {
+      // Email validation
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: emailRegex.test(newValue)
+          ? ''
+          : 'Please enter a valid email address',
+      }));
+    } else {
+      // Reset identifier error if not matching either mobile or email
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+
+    // Update identifier state
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: newValue,
     }));
-    let error = '';
-    setFormErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
-  };
-  // const getAuthPayload = () =>
-  //   formData.email
-  //     ? { email: formData.email, reason: 'forgot' }
-  //     : { mobile: formData.mobile, reason: 'forgot' };
+    return;
+  }
+
+  // For other fields
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+
 
   const handleSendOtp = async () => {
     if (!formData?.identifier || !formData?.password) {
@@ -525,15 +564,23 @@ const PasswordReset = ({ name }: { name: string }) => {
               value={formData.identifier}
               onChange={handleInputChange}
               margin="normal"
+              error={!!formErrors.identifier}
               helperText={formErrors.identifier}
               FormHelperTextProps={{
                 sx: {
-                  color: 'red', // ✅ helperText color set manually
+                  color: 'red',
                   fontSize: '11px',
                   marginLeft: '0px',
                 },
               }}
               InputProps={{
+                inputProps: /^[6-9]/.test(formData.identifier)
+                  ? {
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*',
+                      maxLength: 10,
+                    }
+                  : undefined,
                 sx: {
                   '& .MuiInputBase-input': {
                     padding: '14px',
@@ -543,14 +590,14 @@ const PasswordReset = ({ name }: { name: string }) => {
               }}
               InputLabelProps={{
                 sx: {
-                  fontSize: '12px', // Label font size
+                  fontSize: '12px',
                   '&.Mui-focused': {
-                    transform: 'translate(14px, -6px) scale(0.75)', // Shrink the label when focused
-                    color: '#582E92', // Optional: change label color on focus
+                    transform: 'translate(14px, -6px) scale(0.75)',
+                    color: '#582E92',
                   },
                   '&.MuiInputLabel-shrink': {
-                    transform: 'translate(14px, -6px) scale(0.75)', // Shrink when filled or focused
-                    color: '#582E92', // Optional: change label color when filled
+                    transform: 'translate(14px, -6px) scale(0.75)',
+                    color: '#582E92',
                   },
                 },
               }}
